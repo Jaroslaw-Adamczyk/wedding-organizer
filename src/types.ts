@@ -1,6 +1,4 @@
-export type TableShape = "round" | "rectangle";
-
-export type RectangleResizeMode = "both" | "x" | "y";
+export type TableShape = "round" | "rectangle" | "square";
 
 export type Guest = {
   id: string;
@@ -14,7 +12,6 @@ export type SeatingTable = {
   shape: TableShape;
   seatCount: number;
   rectangleActiveSides: 1 | 2 | 4;
-  rectangleResizeMode: RectangleResizeMode;
   width: number;
   height: number;
   x: number;

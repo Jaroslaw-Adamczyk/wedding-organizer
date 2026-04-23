@@ -34,7 +34,7 @@ function App() {
   return (
     <Theme>
       <SeatingProvider>
-        <div className="grid min-h-screen grid-cols-1 xl:grid-cols-[320px_1fr]">
+        <div className="grid min-h-screen grid-cols-1 xl:grid-cols-[400px_1fr]">
           <Sidebar />
 
           <section className="relative h-screen overflow-hidden">

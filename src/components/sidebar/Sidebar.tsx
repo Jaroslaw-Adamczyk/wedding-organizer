@@ -1,21 +1,14 @@
 import * as Accordion from "@radix-ui/react-accordion";
 import { TableDetails } from "./TableDetails";
 import { AccordionSection } from "./AccordionSection";
-import { GuestImport } from "./GuestImport";
 import { useSeating } from "../../context/seating-context";
 import { Select } from "../ui/select";
+import { GuestsList } from "./GuestsList";
 
 const EMPTY_SEAT_VALUE = "__empty__";
 
 export function Sidebar() {
-  const {
-    guests,
-    tables,
-    selectedSeat,
-    assignedGuestIds,
-    assignGuestToSeat,
-    removeGuestFromAnySeat,
-  } = useSeating();
+  const { guests, tables, selectedSeat, assignGuestToSeat } = useSeating();
 
   return (
     <aside className="overflow-auto h-screen border-b border-outline-variant bg-surface-container p-4 xl:border-r xl:border-b-0">
@@ -35,7 +28,7 @@ export function Sidebar() {
           <TableDetails />
         </AccordionSection>
 
-        <AccordionSection value="seat" title="Seat Assignment">
+        <AccordionSection value="seat" title="Selected Seat">
           {selectedSeat ? (
             <div className="grid gap-2">
               <p className="text-sm text-on-surface">
@@ -77,36 +70,7 @@ export function Sidebar() {
         </AccordionSection>
 
         <AccordionSection value="guests" title="Guests">
-          <GuestImport />
-
-          <ul className="m-0 grid list-none gap-1.5 p-0">
-            {guests.map((guest) => {
-              const isAssigned = assignedGuestIds.has(guest.id);
-              return (
-                <li
-                  key={guest.id}
-                  className={`group flex items-center justify-between rounded-lg border px-2 py-1.5 text-sm ${
-                    isAssigned
-                      ? "border-outline-variant bg-surface-variant text-on-surface-variant"
-                      : "border-outline-variant bg-surface text-on-surface"
-                  }`}
-                >
-                  <span>
-                    {guest.name} {guest.surname}
-                  </span>
-                  {isAssigned ? (
-                    <button
-                      type="button"
-                      className="h-5 w-5 rounded-full border border-outline-variant bg-surface p-0 text-xs leading-5 text-on-surface-variant opacity-0 transition group-hover:opacity-100 hover:bg-error-container hover:text-on-error-container"
-                      onClick={() => removeGuestFromAnySeat(guest.id)}
-                    >
-                      x
-                    </button>
-                  ) : null}
-                </li>
-              );
-            })}
-          </ul>
+          <GuestsList />
         </AccordionSection>
       </Accordion.Root>
     </aside>

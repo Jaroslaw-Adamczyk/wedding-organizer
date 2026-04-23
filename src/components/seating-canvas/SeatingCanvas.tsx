@@ -58,15 +58,10 @@ export function SeatingCanvas() {
     if (!selectedTable) {
       return ["top-left", "top-right", "bottom-left", "bottom-right"];
     }
-    if (selectedTable.shape === "round") {
+    if (selectedTable.shape === "round" || selectedTable.shape === "square") {
       return ["top-left", "top-right", "bottom-left", "bottom-right"];
     }
-    if (selectedTable.rectangleResizeMode === "x") {
-      return ["middle-left", "middle-right"];
-    }
-    if (selectedTable.rectangleResizeMode === "y") {
-      return ["top-center", "bottom-center"];
-    }
+
     return [
       "top-left",
       "top-center",
@@ -139,25 +134,11 @@ export function SeatingCanvas() {
     node.scaleY(1);
 
     updateTable(table.id, (current) => {
-      if (current.shape === "round") {
+      if (current.shape === "round" || current.shape === "square") {
         const diameter = clampTableDimension(
           Math.max(proposedWidth, proposedHeight),
         );
         return { ...current, width: diameter, height: diameter };
-      }
-
-      if (current.rectangleResizeMode === "x") {
-        return {
-          ...current,
-          width: proposedWidth,
-        };
-      }
-
-      if (current.rectangleResizeMode === "y") {
-        return {
-          ...current,
-          height: proposedHeight,
-        };
       }
 
       return {

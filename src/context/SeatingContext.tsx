@@ -112,7 +112,6 @@ export function SeatingProvider({ children }: { children: ReactNode }) {
           table.y + offset.dy,
         );
         copy.rectangleActiveSides = table.rectangleActiveSides;
-        copy.rectangleResizeMode = table.rectangleResizeMode;
         copy.width = table.width;
         copy.height = table.height;
 
@@ -181,7 +180,7 @@ export function SeatingProvider({ children }: { children: ReactNode }) {
     [],
   );
 
-  const removeGuestFromAnySeat = useCallback((guestId: string): void => {
+  const revokeGuestFromAnySeat = useCallback((guestId: string): void => {
     setTables((prevTables) =>
       prevTables.map((table) => ({
         ...table,
@@ -201,6 +200,15 @@ export function SeatingProvider({ children }: { children: ReactNode }) {
           guestId !== null && nextGuestIds.has(guestId) ? guestId : null,
         ),
       })),
+    );
+  }, []);
+
+  const addGuest = useCallback((guest: Guest): void => {
+    setGuests((prevGuests) => [...prevGuests, guest]);
+  }, []);
+  const removeGuest = useCallback((guestId: string): void => {
+    setGuests((prevGuests) =>
+      prevGuests.filter((guest) => guest.id !== guestId),
     );
   }, []);
 
@@ -309,8 +317,10 @@ export function SeatingProvider({ children }: { children: ReactNode }) {
       deleteTable,
       resizeTableSeats,
       assignGuestToSeat,
-      removeGuestFromAnySeat,
+      revokeGuestFromAnySeat,
       importGuests,
+      addGuest,
+      removeGuest,
     }),
     [
       guests,
@@ -328,8 +338,10 @@ export function SeatingProvider({ children }: { children: ReactNode }) {
       deleteTable,
       resizeTableSeats,
       assignGuestToSeat,
-      removeGuestFromAnySeat,
+      revokeGuestFromAnySeat,
       importGuests,
+      addGuest,
+      removeGuest,
     ],
   );
 

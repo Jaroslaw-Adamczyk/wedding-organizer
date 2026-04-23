@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { Guest } from "../types";
 
-const GuestSchema = z
+export const GuestSchema = z
   .object({
     id: z
       .string()

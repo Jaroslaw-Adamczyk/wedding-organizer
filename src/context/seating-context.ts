@@ -32,8 +32,10 @@ export type SeatingContextValue = {
     seatIndex: number,
     guestId: string | null,
   ) => void;
-  removeGuestFromAnySeat: (guestId: string) => void;
+  revokeGuestFromAnySeat: (guestId: string) => void;
   importGuests: (nextGuests: Guest[]) => void;
+  addGuest: (guest: Guest) => void;
+  removeGuest: (guestId: string) => void;
 };
 
 export const SeatingContext = createContext<SeatingContextValue | null>(null);

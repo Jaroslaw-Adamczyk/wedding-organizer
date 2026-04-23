@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useSeating } from "../../context/seating-context";
-import type { RectangleResizeMode, TableShape } from "../../types";
+import type { TableShape } from "../../types";
 import { Button } from "../ui/button";
 import { Select, type SelectOption } from "../ui/select";
 
@@ -11,14 +11,9 @@ const labelClass = "grid gap-1 text-sm text-on-surface-variant";
 
 const SHAPE_OPTIONS = [
   { value: "round", label: "Round" },
+  { value: "square", label: "Square" },
   { value: "rectangle", label: "Rectangle" },
 ] as const satisfies ReadonlyArray<SelectOption<TableShape>>;
-
-const RESIZE_MODE_OPTIONS = [
-  { value: "both", label: "Both axes" },
-  { value: "x", label: "Only X axis" },
-  { value: "y", label: "Only Y axis" },
-] as const satisfies ReadonlyArray<SelectOption<RectangleResizeMode>>;
 
 type ActiveSidesKey = "1" | "2" | "4";
 
@@ -71,7 +66,7 @@ export function TableDetails() {
   return (
     <div className="grid gap-2">
       <Button variant="primary" size="sm" onClick={addTable}>
-        Add New Table
+        Add Table
       </Button>
 
       <div className="mt-3 grid gap-2">
@@ -112,6 +107,7 @@ export function TableDetails() {
         <label className={labelClass} htmlFor="seat-count-input">
           Seats
         </label>
+
         <input
           id="seat-count-input"
           className={inputClass}
@@ -130,21 +126,6 @@ export function TableDetails() {
 
         {selectedTable.shape === "rectangle" && (
           <>
-            <label className={labelClass}>
-              Resize axis
-              <Select
-                ariaLabel="Resize axis"
-                value={selectedTable.rectangleResizeMode}
-                onValueChange={(rectangleResizeMode) =>
-                  updateTable(selectedTable.id, (table) => ({
-                    ...table,
-                    rectangleResizeMode,
-                  }))
-                }
-                options={RESIZE_MODE_OPTIONS}
-              />
-            </label>
-
             <label className={labelClass} htmlFor="active-sides-select">
               Active sides
               <Select
@@ -174,7 +155,7 @@ export function TableDetails() {
             Duplicate
           </Button>
           <Button
-            variant="destructive"
+            tone="destructive"
             size="sm"
             onClick={() => deleteTable(selectedTable.id)}
           >

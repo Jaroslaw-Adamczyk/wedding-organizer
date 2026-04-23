@@ -7,7 +7,7 @@ export function GuestImport() {
     useGuestImport();
 
   return (
-    <div className="mb-4 grid gap-1.5">
+    <div className=" grid gap-1.5">
       <input
         ref={inputRef}
         type="file"
@@ -21,7 +21,7 @@ export function GuestImport() {
         loading={status === "loading"}
         onClick={openPicker}
       >
-        Import guest list
+        Import guests
       </Button>
       {error ? (
         <p role="alert" className="m-0 text-xs text-error">

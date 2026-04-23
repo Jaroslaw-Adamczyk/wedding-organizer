@@ -12,6 +12,7 @@ export const TABLE_DIMENSIONS: Record<
 > = {
   round: { width: 130, height: 130 },
   rectangle: { width: 180, height: 100 },
+  square: { width: 180, height: 180 },
 };
 
 export function buildTable(
@@ -29,7 +30,6 @@ export function buildTable(
     shape,
     seatCount,
     rectangleActiveSides: 4,
-    rectangleResizeMode: "both",
     width: baseDimensions.width,
     height: baseDimensions.height,
     x,
