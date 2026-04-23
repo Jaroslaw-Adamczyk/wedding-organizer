@@ -34,6 +34,7 @@ export function buildTable(
     height: baseDimensions.height,
     x,
     y,
+    rotation: 0,
     seats: new Array(seatCount).fill(null),
   };
 }

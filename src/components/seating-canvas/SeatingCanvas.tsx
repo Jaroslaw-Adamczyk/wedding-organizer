@@ -127,24 +127,36 @@ export function SeatingCanvas() {
     const node = event.target;
     const scaleX = Math.abs(node.scaleX());
     const scaleY = Math.abs(node.scaleY());
-    const proposedWidth = clampTableDimension(node.width() * scaleX);
-    const proposedHeight = clampTableDimension(node.height() * scaleY);
+    const rotation = node.rotation();
 
     node.scaleX(1);
     node.scaleY(1);
 
+    node.x(0);
+    node.y(0);
+
+    const isResizing =
+      Math.abs(scaleX - 1) > 0.01 || Math.abs(scaleY - 1) > 0.01;
+
     updateTable(table.id, (current) => {
       if (current.shape === "round" || current.shape === "square") {
-        const diameter = clampTableDimension(
-          Math.max(proposedWidth, proposedHeight),
-        );
-        return { ...current, width: diameter, height: diameter };
+        const diameter = isResizing
+          ? clampTableDimension(
+              Math.max(node.width() * scaleX, node.height() * scaleY),
+            )
+          : current.width;
+        return { ...current, width: diameter, height: diameter, rotation };
       }
 
       return {
         ...current,
-        width: proposedWidth,
-        height: proposedHeight,
+        width: isResizing
+          ? clampTableDimension(node.width() * scaleX)
+          : current.width,
+        height: isResizing
+          ? clampTableDimension(node.height() * scaleY)
+          : current.height,
+        rotation,
       };
     });
   }
@@ -232,7 +244,7 @@ export function SeatingCanvas() {
 
             <Transformer
               ref={transformerRef}
-              rotateEnabled={false}
+              rotateEnabled={true}
               enabledAnchors={transformerAnchors}
               boundBoxFunc={(oldBox, newBox) => {
                 if (

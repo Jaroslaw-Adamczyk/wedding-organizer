@@ -16,6 +16,7 @@ export type SeatingTable = {
   height: number;
   x: number;
   y: number;
+  rotation: number;
   seats: (string | null)[];
 };
 
