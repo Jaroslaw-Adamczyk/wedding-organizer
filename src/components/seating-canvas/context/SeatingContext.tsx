@@ -6,23 +6,30 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { guests as initialGuests } from "../data/guests";
-import type { Guest, HoverTooltip, SeatingTable, SelectedSeat } from "../types";
-import {
-  buildTable,
-  CANVAS_HEIGHT,
-  CANVAS_WIDTH,
-  clampSeatCount,
-  createInitialTables,
-  DEFAULT_TABLE_SEATS,
-  DEFAULT_TABLE_SHAPE,
-} from "../utils/seating";
+import { guests as initialGuests } from "../../../data/guests";
+import type {
+  Guest,
+  HoverTooltip,
+  SeatingTable,
+  SelectedSeat,
+} from "../../../types";
 
 const NEW_TABLE_BASE_X = CANVAS_WIDTH / 2;
 const NEW_TABLE_BASE_Y = CANVAS_HEIGHT / 2;
 const STACK_OFFSET = 30;
 const STACK_WRAP = 300;
 import { SeatingContext, type SeatingContextValue } from "./seating-context";
+import {
+  CANVAS_HEIGHT,
+  CANVAS_WIDTH,
+  DEFAULT_TABLE_SEATS,
+  DEFAULT_TABLE_SHAPE,
+} from "../constants";
+import {
+  buildTable,
+  clampSeatCount,
+  createInitialTables,
+} from "../utils/buildTable";
 
 export function SeatingProvider({ children }: { children: ReactNode }) {
   const [guests, setGuests] = useState<Guest[]>(initialGuests);

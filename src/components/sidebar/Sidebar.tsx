@@ -1,9 +1,11 @@
 import * as Accordion from "@radix-ui/react-accordion";
 import { TableDetails } from "./TableDetails";
 import { AccordionSection } from "./AccordionSection";
-import { useSeating } from "../../context/seating-context";
+import { useSeating } from "../seating-canvas/context/seating-context";
 import { Select } from "../ui/select";
 import { GuestsList } from "./GuestsList";
+import { Button } from "../ui/button";
+import { PlusIcon } from "@heroicons/react/20/solid";
 
 const EMPTY_SEAT_VALUE = "__empty__";
 

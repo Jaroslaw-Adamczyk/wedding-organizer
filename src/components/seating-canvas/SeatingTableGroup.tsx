@@ -2,59 +2,126 @@ import type { KonvaEventObject } from "konva/lib/Node";
 import type { Rect as KonvaRect } from "konva/lib/shapes/Rect";
 import { Circle, Group, Rect, Text } from "react-konva";
 import { materialColors } from "../../theme/colors";
-import type { Guest, SeatingTable, SelectedSeat } from "../../types";
+import type { SeatingTable } from "../../types";
+import { useSeating } from "./context/seating-context";
+import { SeatGroup } from "./SeatGroup";
+import { useRef } from "react";
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "./constants";
 import {
-  getInitials,
+  clampTableDimension,
   getSeatPositions,
   getTableDimensions,
-} from "../../utils/seating";
+} from "./utils/buildTable";
 
 type SeatingTableGroupProps = {
   table: SeatingTable;
-  selectedTableId: string | null;
-  selectedSeat: SelectedSeat | null;
-  guestLookup: Record<string, Guest>;
   onTableShapeRef: (tableId: string, node: KonvaRect | null) => void;
-  onDragStart: (table: SeatingTable) => void;
-  onDragEnd: (table: SeatingTable, event: KonvaEventObject<DragEvent>) => void;
-  onSelectTable: (tableId: string) => void;
-  onSelectSeat: (tableId: string, seatIndex: number) => void;
-  onTableTransform: (
-    table: SeatingTable,
-    event: KonvaEventObject<Event>,
-  ) => void;
-  onInlineRename: (table: SeatingTable) => void;
-  onSeatHover: (event: KonvaEventObject<MouseEvent>, text: string) => void;
-  onSeatLeave: () => void;
 };
 
 export function SeatingTableGroup({
   table,
-  selectedTableId,
-  selectedSeat,
-  guestLookup,
   onTableShapeRef,
-  onDragStart,
-  onDragEnd,
-  onSelectTable,
-  onSelectSeat,
-  onTableTransform,
-  onInlineRename,
-  onSeatHover,
-  onSeatLeave,
 }: SeatingTableGroupProps) {
+  const { updateTable, setSelectedTableId, setSelectedSeat, selectedTableId } =
+    useSeating();
+  const previousPositionRef = useRef<Record<string, { x: number; y: number }>>(
+    {},
+  );
+
   const selected = table.id === selectedTableId;
   const seatPositions = getSeatPositions(table);
   const tableDims = getTableDimensions(table);
+
+  function handleTableTransform(
+    table: SeatingTable,
+    event: KonvaEventObject<Event>,
+  ): void {
+    const node = event.target;
+    const scaleX = Math.abs(node.scaleX());
+    const scaleY = Math.abs(node.scaleY());
+    const rotation = node.rotation();
+
+    node.scaleX(1);
+    node.scaleY(1);
+
+    node.x(0);
+    node.y(0);
+
+    const isResizing =
+      Math.abs(scaleX - 1) > 0.01 || Math.abs(scaleY - 1) > 0.01;
+
+    updateTable(table.id, (current) => {
+      if (current.shape === "round" || current.shape === "square") {
+        const diameter = isResizing
+          ? clampTableDimension(
+              Math.max(node.width() * scaleX, node.height() * scaleY),
+            )
+          : current.width;
+        return { ...current, width: diameter, height: diameter, rotation };
+      }
+
+      return {
+        ...current,
+        width: isResizing
+          ? clampTableDimension(node.width() * scaleX)
+          : current.width,
+        height: isResizing
+          ? clampTableDimension(node.height() * scaleY)
+          : current.height,
+        rotation,
+      };
+    });
+  }
+
+  function handleInlineTableRename(table: SeatingTable): void {
+    const nextName = window.prompt("Rename table", table.name)?.trim();
+    if (!nextName) return;
+    updateTable(table.id, (current) => ({ ...current, name: nextName }));
+  }
+
+  function handleDragStart(table: SeatingTable): void {
+    previousPositionRef.current[table.id] = { x: table.x, y: table.y };
+  }
+
+  function handleDragEnd(
+    table: SeatingTable,
+    event: KonvaEventObject<DragEvent>,
+  ): void {
+    const newPosition = event.target.position();
+    const outOfCanvas =
+      newPosition.x < 100 ||
+      newPosition.y < 100 ||
+      newPosition.x > CANVAS_WIDTH - 100 ||
+      newPosition.y > CANVAS_HEIGHT - 100;
+
+    if (outOfCanvas) {
+      const previous = previousPositionRef.current[table.id] ?? {
+        x: table.x,
+        y: table.y,
+      };
+      event.target.position(previous);
+      updateTable(table.id, (current) => ({ ...current, ...previous }));
+      return;
+    }
+
+    updateTable(table.id, (current) => ({
+      ...current,
+      x: newPosition.x,
+      y: newPosition.y,
+    }));
+  }
 
   return (
     <Group
       x={table.x}
       y={table.y}
       draggable
-      onDragStart={() => onDragStart(table)}
-      onDragEnd={(event) => onDragEnd(table, event)}
-      onClick={() => onSelectTable(table.id)}
+      onDragStart={() => handleDragStart(table)}
+      onDragEnd={(event) => handleDragEnd(table, event)}
+      onClick={() => {
+        setSelectedTableId(table.id);
+        setSelectedSeat(null);
+      }}
     >
       <Group rotation={table.rotation}>
         {table.shape === "round" ? (
@@ -84,58 +151,13 @@ export function SeatingTableGroup({
         )}
 
         {seatPositions.map((position, seatIndex) => {
-          const guestId = table.seats[seatIndex];
-          const guest = guestId ? guestLookup[guestId] : undefined;
-          const initials = guest ? getInitials(guest) : `S${seatIndex + 1}`;
-          const isSeatSelected =
-            selectedSeat?.tableId === table.id &&
-            selectedSeat.seatIndex === seatIndex;
-
           return (
-            <Group
+            <SeatGroup
               key={`${table.id}-seat-${seatIndex}`}
-              x={position.x}
-              y={position.y}
-              onMouseEnter={(event) => {
-                if (!guest) return;
-                onSeatHover(event, `${guest.name} ${guest.surname}`);
-              }}
-              onMouseLeave={onSeatLeave}
-              onClick={(event) => {
-                event.cancelBubble = true;
-                onSelectSeat(table.id, seatIndex);
-              }}
-            >
-              <Circle
-                radius={20}
-                fill={
-                  guest
-                    ? materialColors.secondaryContainer
-                    : materialColors.surface
-                }
-                stroke={
-                  isSeatSelected
-                    ? materialColors.primary
-                    : materialColors.outline
-                }
-                strokeWidth={isSeatSelected ? 3 : 1}
-              />
-              <Group rotation={-table.rotation}>
-                <Text
-                  text={initials}
-                  x={-18}
-                  y={-7}
-                  width={36}
-                  align="center"
-                  fontSize={11}
-                  fill={
-                    guest
-                      ? materialColors.onSecondaryContainer
-                      : materialColors.onSurfaceVariant
-                  }
-                />
-              </Group>
-            </Group>
+              table={table}
+              position={position}
+              seatIndex={seatIndex}
+            />
           );
         })}
       </Group>
@@ -148,7 +170,7 @@ export function SeatingTableGroup({
         align="center"
         fontStyle="bold"
         fill={materialColors.onSurface}
-        onDblClick={() => onInlineRename(table)}
+        onDblClick={() => handleInlineTableRename(table)}
       />
 
       <Rect
@@ -164,8 +186,8 @@ export function SeatingTableGroup({
         rotation={table.rotation}
         fillEnabled={false}
         strokeEnabled={false}
-        onTransform={(event) => onTableTransform(table, event)}
-        onTransformEnd={(event) => onTableTransform(table, event)}
+        onTransform={(event) => handleTableTransform(table, event)}
+        onTransformEnd={(event) => handleTableTransform(table, event)}
       />
     </Group>
   );

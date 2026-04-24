@@ -1,6 +1,7 @@
 import { Button } from "../ui/button";
 import { ACCEPT_ATTRIBUTE } from "../../utils/guestParser";
 import { useGuestImport } from "./useGuestImport";
+import { Tooltip } from "../ui/tooltip";
 
 export function GuestImport() {
   const { inputRef, status, error, openPicker, handleFileChange } =
@@ -15,14 +16,16 @@ export function GuestImport() {
         accept={ACCEPT_ATTRIBUTE}
         onChange={handleFileChange}
       />
-      <Button
-        variant="outline"
-        size="sm"
-        loading={status === "loading"}
-        onClick={openPicker}
-      >
-        Import guests
-      </Button>
+      <Tooltip label="Import guests from a CSV, TXT or JSON file">
+        <Button
+          variant="outline"
+          size="sm"
+          loading={status === "loading"}
+          onClick={openPicker}
+        >
+          Import guests
+        </Button>
+      </Tooltip>
       {error ? (
         <p role="alert" className="m-0 text-xs text-error">
           {error}

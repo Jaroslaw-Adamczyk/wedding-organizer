@@ -1,18 +1,26 @@
-import type { HoverTooltip as HoverTooltipType } from "../../types";
+import { useSeating } from "./context/seating-context";
+import { Tooltip } from "../ui/tooltip";
 
-type HoverTooltipProps = {
-  tooltip: HoverTooltipType;
-};
+export function HoverTooltip() {
+  const { setHoverTooltip, hoverTooltip } = useSeating();
 
-export function HoverTooltip({ tooltip }: HoverTooltipProps) {
-  if (!tooltip) return null;
+  if (!hoverTooltip) return null;
 
   return (
-    <div
-      className="pointer-events-none fixed z-20 rounded-md bg-inverse-surface px-2 py-1 text-xs text-inverse-on-surface shadow-sm"
-      style={{ left: tooltip.x, top: tooltip.y }}
+    <Tooltip
+      label={hoverTooltip.text}
+      open
+      side="top"
+      delayDuration={400}
+      onOpenChange={(next) => {
+        if (!next) setHoverTooltip(null);
+      }}
     >
-      {tooltip.text}
-    </div>
+      <span
+        className="pointer-events-none fixed h-px w-px"
+        style={{ left: hoverTooltip.x, top: hoverTooltip.y }}
+        aria-hidden
+      />
+    </Tooltip>
   );
 }

@@ -1,19 +1,12 @@
-import type { Guest, SeatingTable, TableShape } from "../types";
-
-export const CANVAS_WIDTH = 3840;
-export const CANVAS_HEIGHT = 2000;
-export const DEFAULT_TABLE_SHAPE: TableShape = "round";
-export const DEFAULT_TABLE_SEATS = 10;
-export const MIN_TABLE_DIMENSION = 60;
-
-export const TABLE_DIMENSIONS: Record<
-  TableShape,
-  { width: number; height: number }
-> = {
-  round: { width: 130, height: 130 },
-  rectangle: { width: 180, height: 100 },
-  square: { width: 180, height: 180 },
-};
+import type { SeatingTable, TableShape } from "../../../types";
+import {
+  DEFAULT_TABLE_SHAPE,
+  CANVAS_HEIGHT,
+  CANVAS_WIDTH,
+  DEFAULT_TABLE_SEATS,
+  TABLE_DIMENSIONS,
+  MIN_TABLE_DIMENSION,
+} from "../constants";
 
 export function buildTable(
   id: string,
@@ -52,18 +45,14 @@ export function createInitialTables(): SeatingTable[] {
   ];
 }
 
-export function getInitials(guest: Pick<Guest, "name" | "surname">): string {
-  return `${guest.name?.charAt(0) ?? ""}${guest.surname?.charAt(0) ?? ""}`.toUpperCase();
+export function clampTableDimension(value: number): number {
+  if (!Number.isFinite(value)) return MIN_TABLE_DIMENSION;
+  return Math.max(MIN_TABLE_DIMENSION, Math.floor(value));
 }
 
 export function clampSeatCount(value: number): number {
   if (value < 0) return 0;
   return Math.floor(value);
-}
-
-export function clampTableDimension(value: number): number {
-  if (!Number.isFinite(value)) return MIN_TABLE_DIMENSION;
-  return Math.max(MIN_TABLE_DIMENSION, Math.floor(value));
 }
 
 export function getTableDimensions(table: SeatingTable): {

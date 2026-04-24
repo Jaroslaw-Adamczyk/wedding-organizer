@@ -1,6 +1,11 @@
 import { createContext, useContext } from "react";
 import type { Dispatch, SetStateAction } from "react";
-import type { Guest, HoverTooltip, SeatingTable, SelectedSeat } from "../types";
+import type {
+  Guest,
+  HoverTooltip,
+  SeatingTable,
+  SelectedSeat,
+} from "../../../types";
 
 export type SeatingContextValue = {
   guests: Guest[];

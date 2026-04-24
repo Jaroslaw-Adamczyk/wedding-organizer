@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from "react";
 import { parseGuestFile } from "../../utils/guestParser";
-import { useSeating } from "../../context/seating-context";
+import { useSeating } from "../seating-canvas/context/seating-context";
 
 type ImportStatus = "idle" | "loading" | "error" | "success";
 

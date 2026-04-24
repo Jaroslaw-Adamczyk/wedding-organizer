@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useSeating } from "../../context/seating-context";
+import { useSeating } from "../seating-canvas/context/seating-context";
 import type { TableShape } from "../../types";
 import { Button } from "../ui/button";
 import { Select, type SelectOption } from "../ui/select";

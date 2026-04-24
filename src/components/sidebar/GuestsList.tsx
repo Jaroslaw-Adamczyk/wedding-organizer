@@ -1,6 +1,6 @@
 import * as ToggleGroup from "@radix-ui/react-toggle-group";
 import { useMemo, useState } from "react";
-import { useSeating } from "../../context/seating-context";
+import { useSeating } from "../seating-canvas/context/seating-context";
 import { Button } from "../ui/button";
 import { GuestImport } from "./GuestImport";
 import LinkSlashIcon from "@heroicons/react/20/solid/LinkSlashIcon";

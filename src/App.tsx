@@ -2,8 +2,9 @@ import { Theme } from "@radix-ui/themes";
 import { SeatingCanvas } from "./components/seating-canvas/SeatingCanvas";
 import { Sidebar } from "./components/sidebar/Sidebar";
 import { Slider } from "./components/ui/slider";
-import { SeatingProvider } from "./context/SeatingContext";
-import { useSeating } from "./context/seating-context";
+import { SeatingProvider } from "./components/seating-canvas/context/SeatingContext";
+import { useSeating } from "./components/seating-canvas/context/seating-context";
+import { Toolbar } from "./components/toolbar/Toolbar";
 
 function CanvasScaleControl() {
   const { canvasScale, setCanvasScale } = useSeating();
@@ -39,6 +40,9 @@ function App() {
 
           <section className="relative h-screen overflow-hidden">
             <SeatingCanvas />
+            <div className="absolute top-1/2 right-8 -translate-y-1/2 z-30">
+              <Toolbar />
+            </div>
           </section>
         </div>
 

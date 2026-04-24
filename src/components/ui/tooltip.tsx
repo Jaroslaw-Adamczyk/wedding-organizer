@@ -9,6 +9,9 @@ interface TooltipProps {
   side?: "top" | "right" | "bottom" | "left";
   delayDuration?: number;
   className?: string;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  disableHoverableContent?: boolean;
 }
 
 export function Tooltip({
@@ -17,10 +20,16 @@ export function Tooltip({
   side = "top",
   delayDuration = 200,
   className,
+  open,
+  onOpenChange,
+  disableHoverableContent,
 }: TooltipProps) {
   return (
-    <TooltipPrimitive.Provider delayDuration={delayDuration}>
-      <TooltipPrimitive.Root>
+    <TooltipPrimitive.Provider
+      delayDuration={delayDuration}
+      disableHoverableContent={disableHoverableContent}
+    >
+      <TooltipPrimitive.Root open={open} onOpenChange={onOpenChange}>
         <TooltipPrimitive.Trigger asChild>{children}</TooltipPrimitive.Trigger>
         <TooltipPrimitive.Portal>
           <TooltipPrimitive.Content
