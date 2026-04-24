@@ -30,3 +30,10 @@ export type HoverTooltip = {
   y: number;
   text: string;
 } | null;
+
+export type SeatPopover = {
+  tableId: string;
+  seatIndex: number;
+  x: number;
+  y: number;
+} | null;

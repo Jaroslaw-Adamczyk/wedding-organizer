@@ -5,6 +5,7 @@ import type {
   HoverTooltip,
   SeatingTable,
   SelectedSeat,
+  SeatPopover,
 } from "../../../types";
 
 export type SeatingContextValue = {
@@ -20,6 +21,8 @@ export type SeatingContextValue = {
   setSelectedTableId: Dispatch<SetStateAction<string | null>>;
   setSelectedSeat: Dispatch<SetStateAction<SelectedSeat | null>>;
   setHoverTooltip: Dispatch<SetStateAction<HoverTooltip>>;
+  activeSeatPopover: SeatPopover;
+  setActiveSeatPopover: Dispatch<SetStateAction<SeatPopover>>;
   setCanvasScale: Dispatch<SetStateAction<number>>;
   updateTable: (
     tableId: string,

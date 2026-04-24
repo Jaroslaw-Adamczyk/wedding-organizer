@@ -12,6 +12,7 @@ import type {
   HoverTooltip,
   SeatingTable,
   SelectedSeat,
+  SeatPopover,
 } from "../../../types";
 
 const NEW_TABLE_BASE_X = CANVAS_WIDTH / 2;
@@ -39,6 +40,7 @@ export function SeatingProvider({ children }: { children: ReactNode }) {
   );
   const [selectedSeat, setSelectedSeat] = useState<SelectedSeat | null>(null);
   const [hoverTooltip, setHoverTooltip] = useState<HoverTooltip>(null);
+  const [activeSeatPopover, setActiveSeatPopover] = useState<SeatPopover>(null);
   const [tableCounter, setTableCounter] = useState(2);
   const [canvasScale, setCanvasScale] = useState(1);
 
@@ -317,6 +319,8 @@ export function SeatingProvider({ children }: { children: ReactNode }) {
       setSelectedTableId,
       setSelectedSeat,
       setHoverTooltip,
+      activeSeatPopover,
+      setActiveSeatPopover,
       setCanvasScale,
       updateTable,
       addTable,
@@ -335,6 +339,7 @@ export function SeatingProvider({ children }: { children: ReactNode }) {
       selectedTableId,
       selectedSeat,
       hoverTooltip,
+      activeSeatPopover,
       canvasScale,
       selectedTable,
       assignedGuestIds,

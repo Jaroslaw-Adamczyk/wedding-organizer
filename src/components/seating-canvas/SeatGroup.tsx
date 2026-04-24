@@ -16,6 +16,7 @@ export function SeatGroup({ table, position, seatIndex }: SeatGroupProps) {
     setHoverTooltip,
     setSelectedTableId,
     setSelectedSeat,
+    setActiveSeatPopover,
     guestLookup,
     selectedSeat,
   } = useSeating();
@@ -44,8 +45,22 @@ export function SeatGroup({ table, position, seatIndex }: SeatGroupProps) {
     setHoverTooltip({ x: xPos, y: yPos, text });
   }
 
-  function handleSeatDoubleClick(seatIndex: number): void {
-    console.log("seat double clicked", seatIndex);
+  function handleSeatDoubleClick(
+    event: KonvaEventObject<MouseEvent>,
+    seatIndex: number,
+  ): void {
+    event.cancelBubble = true;
+    const seatNode = event.currentTarget;
+    const stage = seatNode.getStage();
+    let x = event.evt.clientX;
+    let y = event.evt.clientY;
+    if (stage) {
+      const box = seatNode.getClientRect();
+      const { left, top } = stage.container().getBoundingClientRect();
+      x = left + box.x + box.width / 2;
+      y = top + box.y + box.height;
+    }
+    setActiveSeatPopover({ tableId: table.id, seatIndex, x, y });
   }
 
   return (
@@ -62,6 +77,7 @@ export function SeatGroup({ table, position, seatIndex }: SeatGroupProps) {
         setSelectedTableId(table.id);
         setSelectedSeat({ tableId: table.id, seatIndex });
       }}
+      onDblClick={(event) => handleSeatDoubleClick(event, seatIndex)}
     >
       <Circle
         radius={20}
@@ -86,7 +102,6 @@ export function SeatGroup({ table, position, seatIndex }: SeatGroupProps) {
               ? materialColors.onSecondaryContainer
               : materialColors.onSurfaceVariant
           }
-          onDblClick={() => handleSeatDoubleClick(seatIndex)}
         />
       </Group>
     </Group>

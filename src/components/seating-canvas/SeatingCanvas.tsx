@@ -2,9 +2,10 @@ import { useEffect, useMemo, useRef } from "react";
 import type { KonvaEventObject } from "konva/lib/Node";
 import type { Rect as KonvaRect } from "konva/lib/shapes/Rect";
 import type { Transformer as KonvaTransformer } from "konva/lib/shapes/Transformer";
-import { Layer, Rect, Stage, Transformer } from "react-konva";
+import { Layer, Line, Rect, Stage, Transformer } from "react-konva";
 import { useSeating } from "./context/seating-context";
 import { HoverTooltip } from "./HoverTooltip";
+import { SeatAssignPopover } from "./SeatAssignPopover";
 import { SeatingTableGroup } from "./SeatingTableGroup";
 import { useCanvasPinchZoom } from "./useCanvasPinchZoom";
 import { useCanvasScrollPositioning } from "./useCanvasScrollPositioning";
@@ -18,6 +19,7 @@ export function SeatingCanvas() {
     selectedSeat,
     canvasScale,
     selectedTable,
+    activeSeatPopover,
     setSelectedTableId,
     setSelectedSeat,
     setCanvasScale,
@@ -39,6 +41,7 @@ export function SeatingCanvas() {
     canvasScaleRef,
     pendingScrollRef,
     setCanvasScale,
+    disabled: !!activeSeatPopover,
   });
 
   const transformerAnchors = useMemo(() => {
@@ -94,7 +97,7 @@ export function SeatingCanvas() {
   return (
     <div
       ref={scrollContainerRef}
-      className="h-full w-full overflow-auto bg-surface-variant"
+      className={`h-full w-full bg-surface-variant ${activeSeatPopover ? "overflow-hidden" : "overflow-auto"}`}
     >
       <Stage
         width={CANVAS_WIDTH * canvasScale}
@@ -112,6 +115,28 @@ export function SeatingCanvas() {
             height={CANVAS_HEIGHT}
             fill={materialColors.surface}
           />
+
+          {/* Subtle background grid */}
+          {Array.from({ length: Math.floor(CANVAS_WIDTH / 40) + 1 }, (_, i) => (
+            <Line
+              key={`vgrid-${i}`}
+              points={[i * 40, 0, i * 40, CANVAS_HEIGHT]}
+              stroke={materialColors.outlineVariant}
+              strokeWidth={0.5}
+              opacity={0.35}
+              listening={false}
+            />
+          ))}
+          {Array.from({ length: Math.floor(CANVAS_HEIGHT / 40) + 1 }, (_, i) => (
+            <Line
+              key={`hgrid-${i}`}
+              points={[0, i * 40, CANVAS_WIDTH, i * 40]}
+              stroke={materialColors.outlineVariant}
+              strokeWidth={0.5}
+              opacity={0.35}
+              listening={false}
+            />
+          ))}
 
           {tables.map((table) => (
             <SeatingTableGroup
@@ -138,6 +163,7 @@ export function SeatingCanvas() {
         </Layer>
       </Stage>
       <HoverTooltip />
+      <SeatAssignPopover />
     </div>
   );
 }

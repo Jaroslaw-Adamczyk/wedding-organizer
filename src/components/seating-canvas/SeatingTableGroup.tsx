@@ -133,6 +133,11 @@ export function SeatingTableGroup({
                 : materialColors.surfaceVariant
             }
             stroke={materialColors.outline}
+            shadowColor="black"
+            shadowBlur={10}
+            shadowOpacity={0.15}
+            shadowOffsetX={2}
+            shadowOffsetY={3}
           />
         ) : (
           <Rect
@@ -147,6 +152,11 @@ export function SeatingTableGroup({
                 : materialColors.surfaceVariant
             }
             stroke={materialColors.outline}
+            shadowColor="black"
+            shadowBlur={10}
+            shadowOpacity={0.15}
+            shadowOffsetX={2}
+            shadowOffsetY={3}
           />
         )}
 

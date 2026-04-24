@@ -14,12 +14,14 @@ export function useCanvasPinchZoom(params: {
   canvasScaleRef: RefObject<number>;
   pendingScrollRef: RefObject<ScrollPosition | null>;
   setCanvasScale: Dispatch<SetStateAction<number>>;
+  disabled?: boolean;
 }): void {
   const {
     scrollContainerRef,
     canvasScaleRef,
     pendingScrollRef,
     setCanvasScale,
+    disabled = false,
   } = params;
 
   const pinchStateRef = useRef<{
@@ -87,6 +89,7 @@ export function useCanvasPinchZoom(params: {
 
     function handleWheel(event: WheelEvent): void {
       if (!event.ctrlKey) return;
+      if (disabled) return;
       event.preventDefault();
 
       state.accumulatedDeltaY += event.deltaY;
@@ -110,5 +113,6 @@ export function useCanvasPinchZoom(params: {
     pinchStateRef,
     scrollContainerRef,
     setCanvasScale,
+    disabled,
   ]);
 }

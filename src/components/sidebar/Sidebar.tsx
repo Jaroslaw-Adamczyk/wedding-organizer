@@ -4,8 +4,6 @@ import { AccordionSection } from "./AccordionSection";
 import { useSeating } from "../seating-canvas/context/seating-context";
 import { Select } from "../ui/select";
 import { GuestsList } from "./GuestsList";
-import { Button } from "../ui/button";
-import { PlusIcon } from "@heroicons/react/20/solid";
 
 const EMPTY_SEAT_VALUE = "__empty__";
 
@@ -56,7 +54,7 @@ export function Sidebar() {
                   )
                 }
                 options={[
-                  { value: EMPTY_SEAT_VALUE, label: "-- Empty seat --" },
+                  { value: EMPTY_SEAT_VALUE, label: "- No guest -" },
                   ...guests.map((guest) => ({
                     value: guest.id,
                     label: `${guest.name} ${guest.surname}`,
