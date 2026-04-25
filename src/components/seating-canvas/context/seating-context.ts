@@ -1,6 +1,8 @@
 import { createContext, useContext } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import type {
+  CanvasShape,
+  CanvasShapeKind,
   Guest,
   HoverTooltip,
   SeatingTable,
@@ -11,7 +13,9 @@ import type {
 export type SeatingContextValue = {
   guests: Guest[];
   tables: SeatingTable[];
+  canvasShapes: CanvasShape[];
   selectedTableId: string | null;
+  selectedShapeId: string | null;
   selectedSeat: SelectedSeat | null;
   hoverTooltip: HoverTooltip;
   canvasScale: number;
@@ -19,6 +23,7 @@ export type SeatingContextValue = {
   assignedGuestIds: Set<string>;
   guestLookup: Record<string, Guest>;
   setSelectedTableId: Dispatch<SetStateAction<string | null>>;
+  setSelectedShapeId: Dispatch<SetStateAction<string | null>>;
   setSelectedSeat: Dispatch<SetStateAction<SelectedSeat | null>>;
   setHoverTooltip: Dispatch<SetStateAction<HoverTooltip>>;
   activeSeatPopover: SeatPopover;
@@ -29,6 +34,12 @@ export type SeatingContextValue = {
     updater: (table: SeatingTable) => SeatingTable,
   ) => void;
   addTable: () => void;
+  addCanvasShape: (kind: CanvasShapeKind) => void;
+  updateCanvasShape: (
+    shapeId: string,
+    updater: (shape: CanvasShape) => CanvasShape,
+  ) => void;
+  deleteCanvasShape: (shapeId: string) => void;
   duplicateTable: (
     table: SeatingTable,
     offset?: { dx: number; dy: number },

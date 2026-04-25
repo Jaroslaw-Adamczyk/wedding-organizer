@@ -6,6 +6,18 @@ export type Guest = {
   surname: string | null;
 };
 
+export type CanvasShapeKind = "rectangle" | "circle";
+
+export type CanvasShape = {
+  id: string;
+  kind: CanvasShapeKind;
+  width: number;
+  height: number;
+  x: number;
+  y: number;
+  rotation: number;
+};
+
 export type SeatingTable = {
   id: string;
   name: string;

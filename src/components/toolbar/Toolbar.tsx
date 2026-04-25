@@ -4,6 +4,8 @@ import * as ToolbarPrimitive from "@radix-ui/react-toolbar";
 import { useSeating } from "../seating-canvas/context/seating-context";
 import { cn } from "../../utils/cn";
 import TablePlusIcon from "../../assets/icons/table-plus.svg?react";
+import CircleIcon from "../../assets/icons/circle.svg?react";
+import RectangleIcon from "../../assets/icons/rectangle.svg?react";
 
 function ToolbarButton({
   label,
@@ -52,8 +54,17 @@ function ToolbarButton({
 }
 
 export const Toolbar = () => {
-  const { selectedTable, addTable, duplicateTable, deleteTable } = useSeating();
-  const hasSelection = selectedTable !== null;
+  const {
+    selectedTable,
+    selectedShapeId,
+    addTable,
+    addCanvasShape,
+    duplicateTable,
+    deleteTable,
+    deleteCanvasShape,
+  } = useSeating();
+  const hasTableSelection = selectedTable !== null;
+  const hasDeletableSelection = hasTableSelection || selectedShapeId !== null;
 
   return (
     <Tooltip.Provider delayDuration={400}>
@@ -63,22 +74,39 @@ export const Toolbar = () => {
         </ToolbarButton>
 
         <ToolbarButton
-          label="Delete table"
-          disabled={!hasSelection}
-          onClick={() => selectedTable && deleteTable(selectedTable.id)}
+          label="Delete selected"
+          disabled={!hasDeletableSelection}
+          onClick={() => {
+            if (selectedShapeId) deleteCanvasShape(selectedShapeId);
+            else if (selectedTable) deleteTable(selectedTable.id);
+          }}
         >
           <TrashIcon className="h-6 w-6" />
         </ToolbarButton>
 
         <ToolbarButton
           label="Duplicate table"
-          disabled={!hasSelection}
+          disabled={!hasTableSelection}
           onClick={() => selectedTable && duplicateTable(selectedTable)}
         >
           <DocumentDuplicateIcon className="h-6 w-6" />
         </ToolbarButton>
 
         <ToolbarPrimitive.Separator className="my-1 w-5 h-px bg-outline-variant" />
+
+        <ToolbarButton
+          label="Add rectangle"
+          onClick={() => addCanvasShape("rectangle")}
+        >
+          <RectangleIcon className="h-8 w-8" />
+        </ToolbarButton>
+
+        <ToolbarButton
+          label="Add circle"
+          onClick={() => addCanvasShape("circle")}
+        >
+          <CircleIcon className="h-8 w-8" />
+        </ToolbarButton>
       </ToolbarPrimitive.Root>
     </Tooltip.Provider>
   );

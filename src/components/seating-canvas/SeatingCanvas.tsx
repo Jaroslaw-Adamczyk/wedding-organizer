@@ -1,8 +1,11 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
+import { CanvasShapeGroup } from "./CanvasShapeGroup";
 import type { KonvaEventObject } from "konva/lib/Node";
 import type { Rect as KonvaRect } from "konva/lib/shapes/Rect";
 import type { Transformer as KonvaTransformer } from "konva/lib/shapes/Transformer";
-import { Layer, Line, Rect, Stage, Transformer } from "react-konva";
+import { Layer, Rect, Stage } from "react-konva";
+import { SeatingCanvasGrid } from "./SeatingCanvasGrid";
+import { SeatingCanvasTransformer } from "./SeatingCanvasTransformer";
 import { useSeating } from "./context/seating-context";
 import { HoverTooltip } from "./HoverTooltip";
 import { SeatAssignPopover } from "./SeatAssignPopover";
@@ -10,23 +13,25 @@ import { SeatingTableGroup } from "./SeatingTableGroup";
 import { useCanvasPinchZoom } from "./useCanvasPinchZoom";
 import { useCanvasScrollPositioning } from "./useCanvasScrollPositioning";
 import { materialColors } from "../../theme/colors";
-import { CANVAS_HEIGHT, CANVAS_WIDTH, MIN_TABLE_DIMENSION } from "./constants";
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "./constants";
 
 export function SeatingCanvas() {
   const {
     tables,
+    canvasShapes,
     selectedTableId,
+    selectedShapeId,
     selectedSeat,
     canvasScale,
-    selectedTable,
     activeSeatPopover,
     setSelectedTableId,
+    setSelectedShapeId,
     setSelectedSeat,
     setCanvasScale,
   } = useSeating();
 
   const transformerRef = useRef<KonvaTransformer | null>(null);
-  const tableShapeRefs = useRef<Record<string, KonvaRect | undefined>>({});
+  const transformNodeRefs = useRef<Record<string, KonvaRect | undefined>>({});
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const canvasScaleRef = useRef(canvasScale);
   const pendingScrollRef = useRef<{ x: number; y: number } | null>(null);
@@ -44,28 +49,13 @@ export function SeatingCanvas() {
     disabled: !!activeSeatPopover,
   });
 
-  const transformerAnchors = useMemo(() => {
-    if (!selectedTable) {
-      return ["top-left", "top-right", "bottom-left", "bottom-right"];
-    }
-    if (selectedTable.shape === "round" || selectedTable.shape === "square") {
-      return ["top-left", "top-right", "bottom-left", "bottom-right"];
-    }
-
-    return [
-      "top-left",
-      "top-center",
-      "top-right",
-      "middle-left",
-      "middle-right",
-      "bottom-left",
-      "bottom-center",
-      "bottom-right",
-    ];
-  }, [selectedTable]);
-
   useEffect(() => {
     if (!transformerRef.current) return;
+    if (selectedShapeId) {
+      const selectedNode = transformNodeRefs.current[selectedShapeId];
+      transformerRef.current.nodes(selectedNode ? [selectedNode] : []);
+      return;
+    }
     if (!selectedTableId) {
       transformerRef.current.nodes([]);
       return;
@@ -74,9 +64,9 @@ export function SeatingCanvas() {
       transformerRef.current.nodes([]);
       return;
     }
-    const selectedNode = tableShapeRefs.current[selectedTableId];
+    const selectedNode = transformNodeRefs.current[selectedTableId];
     transformerRef.current.nodes(selectedNode ? [selectedNode] : []);
-  }, [selectedTableId, selectedSeat, tables]);
+  }, [selectedTableId, selectedShapeId, selectedSeat, tables, canvasShapes]);
 
   function handleCanvasClick(event: KonvaEventObject<MouseEvent>): void {
     const clickedNode = event.target;
@@ -86,12 +76,13 @@ export function SeatingCanvas() {
 
     if (clickedOnEmptyCanvas) {
       setSelectedTableId(null);
+      setSelectedShapeId(null);
       setSelectedSeat(null);
     }
   }
 
-  function handleTableShapeRef(tableId: string, node: KonvaRect | null): void {
-    tableShapeRefs.current[tableId] = node ?? undefined;
+  function registerTransformNode(id: string, node: KonvaRect | null): void {
+    transformNodeRefs.current[id] = node ?? undefined;
   }
 
   return (
@@ -116,25 +107,13 @@ export function SeatingCanvas() {
             fill={materialColors.surface}
           />
 
-          {/* Subtle background grid */}
-          {Array.from({ length: Math.floor(CANVAS_WIDTH / 40) + 1 }, (_, i) => (
-            <Line
-              key={`vgrid-${i}`}
-              points={[i * 40, 0, i * 40, CANVAS_HEIGHT]}
-              stroke={materialColors.outlineVariant}
-              strokeWidth={0.5}
-              opacity={0.35}
-              listening={false}
-            />
-          ))}
-          {Array.from({ length: Math.floor(CANVAS_HEIGHT / 40) + 1 }, (_, i) => (
-            <Line
-              key={`hgrid-${i}`}
-              points={[0, i * 40, CANVAS_WIDTH, i * 40]}
-              stroke={materialColors.outlineVariant}
-              strokeWidth={0.5}
-              opacity={0.35}
-              listening={false}
+          <SeatingCanvasGrid />
+
+          {canvasShapes.map((shape) => (
+            <CanvasShapeGroup
+              key={shape.id}
+              shape={shape}
+              onShapeTransformRef={registerTransformNode}
             />
           ))}
 
@@ -142,24 +121,11 @@ export function SeatingCanvas() {
             <SeatingTableGroup
               key={table.id}
               table={table}
-              onTableShapeRef={handleTableShapeRef}
+              onTableShapeRef={registerTransformNode}
             />
           ))}
 
-          <Transformer
-            ref={transformerRef}
-            rotateEnabled={true}
-            enabledAnchors={transformerAnchors}
-            boundBoxFunc={(oldBox, newBox) => {
-              if (
-                Math.abs(newBox.width) < MIN_TABLE_DIMENSION ||
-                Math.abs(newBox.height) < MIN_TABLE_DIMENSION
-              ) {
-                return oldBox;
-              }
-              return newBox;
-            }}
-          />
+          <SeatingCanvasTransformer ref={transformerRef} />
         </Layer>
       </Stage>
       <HoverTooltip />

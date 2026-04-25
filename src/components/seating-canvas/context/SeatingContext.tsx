@@ -8,6 +8,8 @@ import {
 } from "react";
 import { guests as initialGuests } from "../../../data/guests";
 import type {
+  CanvasShape,
+  CanvasShapeKind,
   Guest,
   HoverTooltip,
   SeatingTable,
@@ -23,6 +25,8 @@ import { SeatingContext, type SeatingContextValue } from "./seating-context";
 import {
   CANVAS_HEIGHT,
   CANVAS_WIDTH,
+  DEFAULT_CIRCLE_SHAPE_DIAMETER,
+  DEFAULT_RECT_SHAPE,
   DEFAULT_TABLE_SEATS,
   DEFAULT_TABLE_SHAPE,
 } from "../constants";
@@ -35,13 +39,16 @@ import {
 export function SeatingProvider({ children }: { children: ReactNode }) {
   const [guests, setGuests] = useState<Guest[]>(initialGuests);
   const [tables, setTables] = useState<SeatingTable[]>(createInitialTables);
+  const [canvasShapes, setCanvasShapes] = useState<CanvasShape[]>([]);
   const [selectedTableId, setSelectedTableId] = useState<string | null>(
     "table-1",
   );
+  const [selectedShapeId, setSelectedShapeId] = useState<string | null>(null);
   const [selectedSeat, setSelectedSeat] = useState<SelectedSeat | null>(null);
   const [hoverTooltip, setHoverTooltip] = useState<HoverTooltip>(null);
   const [activeSeatPopover, setActiveSeatPopover] = useState<SeatPopover>(null);
-  const [tableCounter, setTableCounter] = useState(2);
+  const [tableCounter, setTableCounter] = useState(1);
+  const [shapeCounter, setShapeCounter] = useState(1);
   const [canvasScale, setCanvasScale] = useState(1);
 
   const copiedTableRef = useRef<SeatingTable | null>(null);
@@ -96,11 +103,63 @@ export function SeatingProvider({ children }: { children: ReactNode }) {
       );
 
       setSelectedTableId(newId);
+      setSelectedShapeId(null);
       setSelectedSeat(null);
       setTableCounter((value) => value + 1);
       return [...prev, newTable];
     });
   }, [tableCounter]);
+
+  const addCanvasShape = useCallback(
+    (kind: CanvasShapeKind): void => {
+      setCanvasShapes((prev) => {
+        const stagger = ((shapeCounter - 1) * STACK_OFFSET) % STACK_WRAP;
+        const newId = `shape-${shapeCounter}`;
+        const base = {
+          id: newId,
+          kind,
+          x: NEW_TABLE_BASE_X + stagger,
+          y: NEW_TABLE_BASE_Y + stagger,
+          rotation: 0,
+        } as const;
+        const newShape: CanvasShape =
+          kind === "circle"
+            ? {
+                ...base,
+                width: DEFAULT_CIRCLE_SHAPE_DIAMETER,
+                height: DEFAULT_CIRCLE_SHAPE_DIAMETER,
+              }
+            : {
+                ...base,
+                width: DEFAULT_RECT_SHAPE.width,
+                height: DEFAULT_RECT_SHAPE.height,
+              };
+
+        setSelectedShapeId(newId);
+        setSelectedTableId(null);
+        setSelectedSeat(null);
+        setShapeCounter((value) => value + 1);
+        return [...prev, newShape];
+      });
+    },
+    [shapeCounter],
+  );
+
+  const updateCanvasShape = useCallback(
+    (shapeId: string, updater: (shape: CanvasShape) => CanvasShape): void => {
+      setCanvasShapes((prev) =>
+        prev.map((shape) => (shape.id === shapeId ? updater(shape) : shape)),
+      );
+    },
+    [],
+  );
+
+  const deleteCanvasShape = useCallback((shapeId: string): void => {
+    setCanvasShapes((prev) => prev.filter((shape) => shape.id !== shapeId));
+    setSelectedShapeId((prevSelected) =>
+      prevSelected === shapeId ? null : prevSelected,
+    );
+  }, []);
 
   const duplicateTable = useCallback(
     (
@@ -125,6 +184,7 @@ export function SeatingProvider({ children }: { children: ReactNode }) {
         copy.height = table.height;
 
         setSelectedTableId(newId);
+        setSelectedShapeId(null);
         setSelectedSeat(null);
         setTableCounter((value) => value + 1);
         return [...prev, copy];
@@ -222,9 +282,13 @@ export function SeatingProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const selectedTableRef = useRef<SeatingTable | null>(null);
+  const selectedShapeIdRef = useRef<string | null>(null);
   useEffect(() => {
     selectedTableRef.current = selectedTable;
   }, [selectedTable]);
+  useEffect(() => {
+    selectedShapeIdRef.current = selectedShapeId;
+  }, [selectedShapeId]);
 
   useEffect(() => {
     function handleTableShortcuts(event: KeyboardEvent): void {
@@ -243,12 +307,19 @@ export function SeatingProvider({ children }: { children: ReactNode }) {
 
       if (key === "Escape") {
         setSelectedTableId(null);
+        setSelectedShapeId(null);
         setSelectedSeat(null);
         event.preventDefault();
         return;
       }
 
       if (lowerKey === "backspace" || key === "Delete") {
+        const shapeId = selectedShapeIdRef.current;
+        if (shapeId) {
+          deleteCanvasShape(shapeId);
+          event.preventDefault();
+          return;
+        }
         if (!current) return;
         deleteTable(current.id);
         event.preventDefault();
@@ -264,8 +335,18 @@ export function SeatingProvider({ children }: { children: ReactNode }) {
         else if (key === "ArrowRight") dx = 1;
 
         if (dx !== 0 || dy !== 0) {
-          if (!current) return;
           const step = event.shiftKey ? 20 : 5;
+          const shapeId = selectedShapeIdRef.current;
+          if (shapeId) {
+            updateCanvasShape(shapeId, (s) => ({
+              ...s,
+              x: s.x + dx * step,
+              y: s.y + dy * step,
+            }));
+            event.preventDefault();
+            return;
+          }
+          if (!current) return;
           updateTable(current.id, (table) => ({
             ...table,
             x: table.x + dx * step,
@@ -303,13 +384,21 @@ export function SeatingProvider({ children }: { children: ReactNode }) {
 
     window.addEventListener("keydown", handleTableShortcuts);
     return () => window.removeEventListener("keydown", handleTableShortcuts);
-  }, [duplicateTable, deleteTable, updateTable]);
+  }, [
+    duplicateTable,
+    deleteTable,
+    deleteCanvasShape,
+    updateTable,
+    updateCanvasShape,
+  ]);
 
   const value = useMemo<SeatingContextValue>(
     () => ({
       guests,
       tables,
+      canvasShapes,
       selectedTableId,
+      selectedShapeId,
       selectedSeat,
       hoverTooltip,
       canvasScale,
@@ -317,6 +406,7 @@ export function SeatingProvider({ children }: { children: ReactNode }) {
       assignedGuestIds,
       guestLookup,
       setSelectedTableId,
+      setSelectedShapeId,
       setSelectedSeat,
       setHoverTooltip,
       activeSeatPopover,
@@ -324,6 +414,9 @@ export function SeatingProvider({ children }: { children: ReactNode }) {
       setCanvasScale,
       updateTable,
       addTable,
+      addCanvasShape,
+      updateCanvasShape,
+      deleteCanvasShape,
       duplicateTable,
       deleteTable,
       resizeTableSeats,
@@ -336,7 +429,9 @@ export function SeatingProvider({ children }: { children: ReactNode }) {
     [
       guests,
       tables,
+      canvasShapes,
       selectedTableId,
+      selectedShapeId,
       selectedSeat,
       hoverTooltip,
       activeSeatPopover,
@@ -346,6 +441,9 @@ export function SeatingProvider({ children }: { children: ReactNode }) {
       guestLookup,
       updateTable,
       addTable,
+      addCanvasShape,
+      updateCanvasShape,
+      deleteCanvasShape,
       duplicateTable,
       deleteTable,
       resizeTableSeats,

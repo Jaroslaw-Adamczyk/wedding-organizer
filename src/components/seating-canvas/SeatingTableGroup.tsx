@@ -22,8 +22,13 @@ export function SeatingTableGroup({
   table,
   onTableShapeRef,
 }: SeatingTableGroupProps) {
-  const { updateTable, setSelectedTableId, setSelectedSeat, selectedTableId } =
-    useSeating();
+  const {
+    updateTable,
+    setSelectedTableId,
+    setSelectedShapeId,
+    setSelectedSeat,
+    selectedTableId,
+  } = useSeating();
   const previousPositionRef = useRef<Record<string, { x: number; y: number }>>(
     {},
   );
@@ -120,6 +125,7 @@ export function SeatingTableGroup({
       onDragEnd={(event) => handleDragEnd(table, event)}
       onClick={() => {
         setSelectedTableId(table.id);
+        setSelectedShapeId(null);
         setSelectedSeat(null);
       }}
     >

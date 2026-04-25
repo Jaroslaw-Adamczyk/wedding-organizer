@@ -10,6 +10,10 @@ export const DEFAULT_TABLE_SHAPE: TableShape = "round";
 export const DEFAULT_TABLE_SEATS = 10;
 export const MIN_TABLE_DIMENSION = 60;
 
+export const MIN_CANVAS_SHAPE_DIMENSION = 40;
+export const DEFAULT_RECT_SHAPE = { width: 200, height: 120 };
+export const DEFAULT_CIRCLE_SHAPE_DIAMETER = 120;
+
 export const TABLE_DIMENSIONS: Record<
   TableShape,
   { width: number; height: number }

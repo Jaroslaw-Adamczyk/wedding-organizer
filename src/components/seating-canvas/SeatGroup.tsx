@@ -15,6 +15,7 @@ export function SeatGroup({ table, position, seatIndex }: SeatGroupProps) {
   const {
     setHoverTooltip,
     setSelectedTableId,
+    setSelectedShapeId,
     setSelectedSeat,
     setActiveSeatPopover,
     guestLookup,
@@ -75,6 +76,7 @@ export function SeatGroup({ table, position, seatIndex }: SeatGroupProps) {
       onClick={(event) => {
         event.cancelBubble = true;
         setSelectedTableId(table.id);
+        setSelectedShapeId(null);
         setSelectedSeat({ tableId: table.id, seatIndex });
       }}
       onDblClick={(event) => handleSeatDoubleClick(event, seatIndex)}
