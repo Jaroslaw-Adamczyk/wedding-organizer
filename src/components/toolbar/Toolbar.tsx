@@ -74,6 +74,16 @@ export const Toolbar = () => {
         </ToolbarButton>
 
         <ToolbarButton
+          label="Duplicate table"
+          disabled={!hasTableSelection}
+          onClick={() => selectedTable && duplicateTable(selectedTable)}
+        >
+          <DocumentDuplicateIcon className="h-6 w-6" />
+        </ToolbarButton>
+
+        <ToolbarPrimitive.Separator className="my-1 w-5 h-px bg-outline-variant" />
+
+        <ToolbarButton
           label="Delete selected"
           disabled={!hasDeletableSelection}
           onClick={() => {
@@ -83,16 +93,6 @@ export const Toolbar = () => {
         >
           <TrashIcon className="h-6 w-6" />
         </ToolbarButton>
-
-        <ToolbarButton
-          label="Duplicate table"
-          disabled={!hasTableSelection}
-          onClick={() => selectedTable && duplicateTable(selectedTable)}
-        >
-          <DocumentDuplicateIcon className="h-6 w-6" />
-        </ToolbarButton>
-
-        <ToolbarPrimitive.Separator className="my-1 w-5 h-px bg-outline-variant" />
 
         <ToolbarButton
           label="Add rectangle"
@@ -106,6 +106,10 @@ export const Toolbar = () => {
           onClick={() => addCanvasShape("circle")}
         >
           <CircleIcon className="h-8 w-8" />
+        </ToolbarButton>
+
+        <ToolbarButton label="Add text" onClick={() => addCanvasShape("text")}>
+          <span className="font-serif text-2xl font-bold leading-none">T</span>
         </ToolbarButton>
       </ToolbarPrimitive.Root>
     </Tooltip.Provider>

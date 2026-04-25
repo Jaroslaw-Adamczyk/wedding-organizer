@@ -1,7 +1,7 @@
 import type { KonvaEventObject } from "konva/lib/Node";
 import type { Rect as KonvaRect } from "konva/lib/shapes/Rect";
-import { useRef } from "react";
-import { Circle, Group, Rect } from "react-konva";
+import { useEffect, useRef, useState } from "react";
+import { Circle, Group, Rect, Text } from "react-konva";
 import { materialColors } from "../../theme/colors";
 import type { CanvasShape } from "../../types";
 import { useSeating } from "./context/seating-context";
@@ -31,6 +31,27 @@ export function CanvasShapeGroup({
   const selected = shape.id === selectedShapeId;
   const w = shape.width;
   const h = shape.kind === "circle" ? shape.width : shape.height;
+  const textValue = shape.text ?? "";
+  const fontSize = shape.fontSize ?? 24;
+  const [showTextCursor, setShowTextCursor] = useState(true);
+  const estimatedTextWidth = Math.min(
+    w - 16,
+    textValue.length * fontSize * 0.55,
+  );
+  const cursorX = textValue.length === 0 ? 0 : estimatedTextWidth / 2 + 4;
+  const cursorHeight = fontSize * 1.2;
+
+  useEffect(() => {
+    if (!selected || shape.kind !== "text") {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      setShowTextCursor((visible) => !visible);
+    }, 530);
+
+    return () => window.clearInterval(intervalId);
+  }, [selected, shape.kind]);
 
   function handleTransform(
     s: CanvasShape,
@@ -104,6 +125,13 @@ export function CanvasShapeGroup({
     }));
   }
 
+  function handleInlineTextEdit(s: CanvasShape): void {
+    if (s.kind !== "text") return;
+    const nextText = window.prompt("Edit text", s.text ?? "");
+    if (nextText === null) return;
+    updateCanvasShape(s.id, (current) => ({ ...current, text: nextText }));
+  }
+
   return (
     <Group
       x={shape.x}
@@ -116,6 +144,8 @@ export function CanvasShapeGroup({
         setSelectedTableId(null);
         setSelectedSeat(null);
       }}
+      onDblClick={() => handleInlineTextEdit(shape)}
+      onDblTap={() => handleInlineTextEdit(shape)}
     >
       <Group rotation={shape.rotation}>
         {shape.kind === "circle" ? (
@@ -130,6 +160,51 @@ export function CanvasShapeGroup({
             strokeWidth={1}
             opacity={0.92}
           />
+        ) : shape.kind === "text" ? (
+          <>
+            <Rect
+              x={-w / 2}
+              y={-h / 2}
+              width={w}
+              height={h}
+              cornerRadius={4}
+              fill={
+                selected
+                  ? materialColors.primaryContainer
+                  : materialColors.surface
+              }
+              stroke={
+                selected
+                  ? materialColors.primary
+                  : materialColors.outlineVariant
+              }
+              strokeWidth={1}
+              opacity={selected ? 0.6 : 0}
+            />
+            <Text
+              text={textValue}
+              x={-w / 2}
+              y={-h / 2}
+              width={w}
+              height={h}
+              align="center"
+              verticalAlign="middle"
+              ellipsis
+              wrap="none"
+              fontSize={fontSize}
+              fill={materialColors.onSurface}
+            />
+            {selected && showTextCursor && (
+              <Rect
+                x={cursorX}
+                y={-cursorHeight / 2}
+                width={2}
+                height={cursorHeight}
+                fill={materialColors.primary}
+                listening={false}
+              />
+            )}
+          </>
         ) : (
           <Rect
             x={-w / 2}

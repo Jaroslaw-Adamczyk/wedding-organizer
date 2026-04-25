@@ -22,6 +22,7 @@ export type SeatingContextValue = {
   selectedTable: SeatingTable | null;
   assignedGuestIds: Set<string>;
   guestLookup: Record<string, Guest>;
+  getTableByGuestId: (guestId: string) => SeatingTable | null;
   setSelectedTableId: Dispatch<SetStateAction<string | null>>;
   setSelectedShapeId: Dispatch<SetStateAction<string | null>>;
   setSelectedSeat: Dispatch<SetStateAction<SelectedSeat | null>>;

@@ -14,10 +14,13 @@ type GuestFilter = "all" | "seated" | "not-seated";
 export function GuestsList() {
   const {
     guests,
+    tables,
+    selectedTable,
     assignedGuestIds,
     revokeGuestFromAnySeat,
     addGuest,
     removeGuest,
+    getTableByGuestId,
   } = useSeating();
   const [filter, setFilter] = useState<GuestFilter>("all");
 
@@ -31,6 +34,14 @@ export function GuestsList() {
       return true;
     });
   }, [assignedGuestIds, filter, guests]);
+
+  const selectedTableGuestsIds = useMemo(() => {
+    return (
+      tables
+        .find((table) => table.id === selectedTable?.id)
+        ?.seats.filter((guestId) => guestId !== null) ?? []
+    );
+  }, [tables, selectedTable]);
 
   return (
     <div className="grid gap-3">
@@ -57,11 +68,20 @@ export function GuestsList() {
               return (
                 <GuestItem
                   key={guest.id}
-                  isAssigned={isAssigned}
+                  isAssigned={
+                    selectedTable
+                      ? selectedTableGuestsIds.includes(guest.id)
+                        ? isAssigned
+                        : false
+                      : isAssigned
+                  }
                   onRevoke={() => revokeGuestFromAnySeat(guest.id)}
                   onRemove={() => removeGuest(guest.id)}
                 >
-                  {guest.name} {guest.surname}
+                  {guest.name} {guest.surname}{" "}
+                  <span className="text-xs text-gray-500">
+                    {getTableByGuestId(guest.id)?.name}
+                  </span>
                 </GuestItem>
               );
             })}

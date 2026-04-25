@@ -29,6 +29,7 @@ import {
   DEFAULT_RECT_SHAPE,
   DEFAULT_TABLE_SEATS,
   DEFAULT_TABLE_SHAPE,
+  DEFAULT_TEXT_SHAPE,
 } from "../constants";
 import {
   buildTable,
@@ -47,7 +48,7 @@ export function SeatingProvider({ children }: { children: ReactNode }) {
   const [selectedSeat, setSelectedSeat] = useState<SelectedSeat | null>(null);
   const [hoverTooltip, setHoverTooltip] = useState<HoverTooltip>(null);
   const [activeSeatPopover, setActiveSeatPopover] = useState<SeatPopover>(null);
-  const [tableCounter, setTableCounter] = useState(1);
+  const [tableCounter, setTableCounter] = useState(2);
   const [shapeCounter, setShapeCounter] = useState(1);
   const [canvasScale, setCanvasScale] = useState(1);
 
@@ -75,6 +76,12 @@ export function SeatingProvider({ children }: { children: ReactNode }) {
           .flatMap((table) => table.seats)
           .filter((guestId): guestId is string => guestId !== null),
       ),
+    [tables],
+  );
+
+  const getTableByGuestId = useCallback(
+    (guestId: string): SeatingTable | null =>
+      tables.find((table) => table.seats.includes(guestId)) ?? null,
     [tables],
   );
 
@@ -129,11 +136,19 @@ export function SeatingProvider({ children }: { children: ReactNode }) {
                 width: DEFAULT_CIRCLE_SHAPE_DIAMETER,
                 height: DEFAULT_CIRCLE_SHAPE_DIAMETER,
               }
-            : {
-                ...base,
-                width: DEFAULT_RECT_SHAPE.width,
-                height: DEFAULT_RECT_SHAPE.height,
-              };
+            : kind === "text"
+              ? {
+                  ...base,
+                  text: DEFAULT_TEXT_SHAPE.text,
+                  width: DEFAULT_TEXT_SHAPE.width,
+                  height: DEFAULT_TEXT_SHAPE.height,
+                  fontSize: DEFAULT_TEXT_SHAPE.fontSize,
+                }
+              : {
+                  ...base,
+                  width: DEFAULT_RECT_SHAPE.width,
+                  height: DEFAULT_RECT_SHAPE.height,
+                };
 
         setSelectedShapeId(newId);
         setSelectedTableId(null);
@@ -275,20 +290,31 @@ export function SeatingProvider({ children }: { children: ReactNode }) {
   const addGuest = useCallback((guest: Guest): void => {
     setGuests((prevGuests) => [...prevGuests, guest]);
   }, []);
+
   const removeGuest = useCallback((guestId: string): void => {
     setGuests((prevGuests) =>
       prevGuests.filter((guest) => guest.id !== guestId),
+    );
+    setTables((prevTables) =>
+      prevTables.map((table) => ({
+        ...table,
+        seats: table.seats.map((guestId) => (guestId === guestId ? null : guestId)),
+      })),
     );
   }, []);
 
   const selectedTableRef = useRef<SeatingTable | null>(null);
   const selectedShapeIdRef = useRef<string | null>(null);
+  const canvasShapesRef = useRef<CanvasShape[]>([]);
   useEffect(() => {
     selectedTableRef.current = selectedTable;
   }, [selectedTable]);
   useEffect(() => {
     selectedShapeIdRef.current = selectedShapeId;
   }, [selectedShapeId]);
+  useEffect(() => {
+    canvasShapesRef.current = canvasShapes;
+  }, [canvasShapes]);
 
   useEffect(() => {
     function handleTableShortcuts(event: KeyboardEvent): void {
@@ -304,6 +330,32 @@ export function SeatingProvider({ children }: { children: ReactNode }) {
       const lowerKey = key.toLowerCase();
       const usingModifier = event.ctrlKey || event.metaKey;
       const current = selectedTableRef.current;
+      const shapeId = selectedShapeIdRef.current;
+      const selectedShape = shapeId
+        ? canvasShapesRef.current.find((shape) => shape.id === shapeId)
+        : null;
+
+      if (shapeId && selectedShape?.kind === "text" && !usingModifier) {
+        if (key.length === 1) {
+          updateCanvasShape(shapeId, (shape) =>
+            shape.kind === "text"
+              ? { ...shape, text: `${shape.text ?? ""}${key}` }
+              : shape,
+          );
+          event.preventDefault();
+          return;
+        }
+
+        if (lowerKey === "backspace") {
+          updateCanvasShape(shapeId, (shape) =>
+            shape.kind === "text"
+              ? { ...shape, text: (shape.text ?? "").slice(0, -1) }
+              : shape,
+          );
+          event.preventDefault();
+          return;
+        }
+      }
 
       if (key === "Escape") {
         setSelectedTableId(null);
@@ -314,7 +366,6 @@ export function SeatingProvider({ children }: { children: ReactNode }) {
       }
 
       if (lowerKey === "backspace" || key === "Delete") {
-        const shapeId = selectedShapeIdRef.current;
         if (shapeId) {
           deleteCanvasShape(shapeId);
           event.preventDefault();
@@ -405,6 +456,7 @@ export function SeatingProvider({ children }: { children: ReactNode }) {
       selectedTable,
       assignedGuestIds,
       guestLookup,
+      getTableByGuestId,
       setSelectedTableId,
       setSelectedShapeId,
       setSelectedSeat,
@@ -439,6 +491,7 @@ export function SeatingProvider({ children }: { children: ReactNode }) {
       selectedTable,
       assignedGuestIds,
       guestLookup,
+      getTableByGuestId,
       updateTable,
       addTable,
       addCanvasShape,

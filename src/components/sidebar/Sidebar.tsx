@@ -2,13 +2,10 @@ import * as Accordion from "@radix-ui/react-accordion";
 import { TableDetails } from "./TableDetails";
 import { AccordionSection } from "./AccordionSection";
 import { useSeating } from "../seating-canvas/context/seating-context";
-import { Select } from "../ui/select";
 import { GuestsList } from "./GuestsList";
 
-const EMPTY_SEAT_VALUE = "__empty__";
-
 export function Sidebar() {
-  const { guests, tables, selectedSeat, assignGuestToSeat } = useSeating();
+  const { selectedTable } = useSeating();
 
   return (
     <aside className="overflow-auto h-screen border-b border-outline-variant bg-surface-container p-4 xl:border-r xl:border-b-0">
@@ -24,52 +21,26 @@ export function Sidebar() {
         defaultValue={["tables", "seat", "guests"]}
         className="grid gap-3"
       >
-        <AccordionSection value="tables" title="Tables">
+        <AccordionSection value="tables" title="Table details">
           <TableDetails />
         </AccordionSection>
 
-        <AccordionSection value="seat" title="Selected Seat">
-          {selectedSeat ? (
-            <div className="grid gap-2">
-              <p className="text-sm text-on-surface">
-                <strong>
-                  {
-                    tables.find((table) => table.id === selectedSeat.tableId)
-                      ?.name
-                  }
-                </strong>{" "}
-                - Seat {selectedSeat.seatIndex + 1}
-              </p>
-              <Select
-                ariaLabel="Guest for selected seat"
-                value={
-                  tables.find((table) => table.id === selectedSeat.tableId)
-                    ?.seats[selectedSeat.seatIndex] ?? EMPTY_SEAT_VALUE
-                }
-                onValueChange={(value) =>
-                  assignGuestToSeat(
-                    selectedSeat.tableId,
-                    selectedSeat.seatIndex,
-                    value === EMPTY_SEAT_VALUE ? null : value,
-                  )
-                }
-                options={[
-                  { value: EMPTY_SEAT_VALUE, label: "- No guest -" },
-                  ...guests.map((guest) => ({
-                    value: guest.id,
-                    label: `${guest.name} ${guest.surname}`,
-                  })),
-                ]}
-              />
+        <AccordionSection
+          value="guests"
+          title={
+            <div className="flex items-baseline gap-2">
+              Guests{" "}
+              {selectedTable ? (
+                <div className="text-xs text-gray-500">
+                  {" "}
+                  {selectedTable.name}
+                </div>
+              ) : (
+                ""
+              )}
             </div>
-          ) : (
-            <p className="text-sm text-on-surface-variant">
-              Select a seat on the canvas.
-            </p>
-          )}
-        </AccordionSection>
-
-        <AccordionSection value="guests" title="Guests">
+          }
+        >
           <GuestsList />
         </AccordionSection>
       </Accordion.Root>

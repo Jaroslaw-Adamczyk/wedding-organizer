@@ -39,7 +39,6 @@ export function TableDetails() {
   const {
     selectedTable,
     updateTable,
-    addTable,
     duplicateTable,
     deleteTable,
     resizeTableSeats,
@@ -65,12 +64,8 @@ export function TableDetails() {
 
   return (
     <div className="grid gap-2">
-      <Button variant="primary" size="sm" onClick={addTable}>
-        Add Table
-      </Button>
-
-      <div className="mt-3 grid gap-2">
-        <label className={labelClass}>Table name</label>
+      <div className="grid gap-2">
+        <label className={labelClass}>Name</label>
         <input
           className={inputClass}
           value={selectedTable.name}
