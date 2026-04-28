@@ -5,6 +5,7 @@ import { Slider } from "./components/ui/slider";
 import { SeatingProvider } from "./components/seating-canvas/context/SeatingContext";
 import { useSeating } from "./components/seating-canvas/context/seating-context";
 import { Toolbar } from "./components/toolbar/Toolbar";
+import { AppMenubar } from "./components/menu/AppMenubar";
 
 function CanvasScaleControl() {
   const { canvasScale, setCanvasScale } = useSeating();
@@ -40,6 +41,9 @@ function App() {
 
           <section className="relative h-screen overflow-hidden">
             <SeatingCanvas />
+            <div className="absolute top-4 left-4 z-30">
+              <AppMenubar />
+            </div>
             <div className="absolute top-1/2 right-8 -translate-y-1/2 z-30">
               <Toolbar />
             </div>

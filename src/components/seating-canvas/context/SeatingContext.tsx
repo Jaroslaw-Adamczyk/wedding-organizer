@@ -16,11 +16,21 @@ import type {
   SelectedSeat,
   SeatPopover,
 } from "../../../types";
+import type { CanvasExportPayload } from "../../../utils/canvasExport";
 
 const NEW_TABLE_BASE_X = CANVAS_WIDTH / 2;
 const NEW_TABLE_BASE_Y = CANVAS_HEIGHT / 2;
 const STACK_OFFSET = 30;
 const STACK_WRAP = 300;
+function getNextNumericId(items: Array<{ id: string }>, prefix: string): number {
+  const maxId = items.reduce((max, item) => {
+    const match = item.id.match(new RegExp(`^${prefix}-(\\d+)$`));
+    const numericId = match ? Number(match[1]) : 0;
+    return Number.isFinite(numericId) ? Math.max(max, numericId) : max;
+  }, 0);
+
+  return maxId + 1;
+}
 import { SeatingContext, type SeatingContextValue } from "./seating-context";
 import {
   CANVAS_HEIGHT,
@@ -287,6 +297,21 @@ export function SeatingProvider({ children }: { children: ReactNode }) {
     );
   }, []);
 
+  const importCanvas = useCallback((payload: CanvasExportPayload): void => {
+    setGuests(payload.guests);
+    setTables(payload.tables);
+    setCanvasShapes(payload.shapes);
+    setSelectedTableId(payload.tables[0]?.id ?? null);
+    setSelectedShapeId(null);
+    setSelectedSeat(null);
+    setHoverTooltip(null);
+    setActiveSeatPopover(null);
+    setTableCounter(getNextNumericId(payload.tables, "table"));
+    setShapeCounter(getNextNumericId(payload.shapes, "shape"));
+    copiedTableRef.current = null;
+    pasteCountRef.current = 0;
+  }, []);
+
   const addGuest = useCallback((guest: Guest): void => {
     setGuests((prevGuests) => [...prevGuests, guest]);
   }, []);
@@ -475,6 +500,7 @@ export function SeatingProvider({ children }: { children: ReactNode }) {
       assignGuestToSeat,
       revokeGuestFromAnySeat,
       importGuests,
+      importCanvas,
       addGuest,
       removeGuest,
     }),
@@ -503,6 +529,7 @@ export function SeatingProvider({ children }: { children: ReactNode }) {
       assignGuestToSeat,
       revokeGuestFromAnySeat,
       importGuests,
+      importCanvas,
       addGuest,
       removeGuest,
     ],

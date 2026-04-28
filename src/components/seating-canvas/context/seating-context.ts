@@ -9,6 +9,7 @@ import type {
   SelectedSeat,
   SeatPopover,
 } from "../../../types";
+import type { CanvasExportPayload } from "../../../utils/canvasExport";
 
 export type SeatingContextValue = {
   guests: Guest[];
@@ -54,6 +55,7 @@ export type SeatingContextValue = {
   ) => void;
   revokeGuestFromAnySeat: (guestId: string) => void;
   importGuests: (nextGuests: Guest[]) => void;
+  importCanvas: (payload: CanvasExportPayload) => void;
   addGuest: (guest: Guest) => void;
   removeGuest: (guestId: string) => void;
 };
